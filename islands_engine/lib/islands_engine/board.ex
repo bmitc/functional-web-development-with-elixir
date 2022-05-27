@@ -39,6 +39,8 @@ defmodule IslandsEngine.Board do
     # on the board, so checking if the islands have a position is not applicable.
   end
 
+  @spec guess(__MODULE__.t(), Coordinate.t()) ::
+          {:hit | :miss, atom() | :none, :win | :no_win, __MODULE__.t()}
   def guess(board, %Coordinate{} = coordinate) do
     board
     |> check_all_islands(coordinate)
