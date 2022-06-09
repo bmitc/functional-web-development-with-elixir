@@ -6,6 +6,9 @@ defmodule IslandsEngine.Board do
   alias IslandsEngine.Coordinate
   alias IslandsEngine.Island
 
+  @typedoc """
+  Represents a game board, which is a map of islands. Each key is an `Island.island_type()`.
+  """
   @type t() :: %{optional(Island.island_type()) => Island.t()}
 
   @doc """
@@ -19,13 +22,13 @@ defmodule IslandsEngine.Board do
   position if it has already been positioned before. An error is returned
   if the island overlaps with any other islands.
   """
-  @spec position_island(__MODULE__.t(), atom(), Island.t()) ::
+  @spec position_island(__MODULE__.t(), Island.island_type(), Island.t()) ::
           __MODULE__.t() | {:error, :overlapping_island}
-  def position_island(%{} = board, key, %Island{} = island) do
-    if overlaps_existing_island?(board, key, island) do
+  def position_island(%{} = board, island_type, %Island{} = island) do
+    if overlaps_existing_island?(board, island_type, island) do
       {:error, :overlapping_island}
     else
-      Map.put(board, key, island)
+      Map.put(board, island_type, island)
     end
   end
 

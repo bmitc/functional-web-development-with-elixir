@@ -27,3 +27,6 @@ islands_engine-*.tar
 
 # Ignore ElixirLS files
 .elixir_ls
+
+# Ignore the VS Code Counter extension files
+.VSCodeCounter

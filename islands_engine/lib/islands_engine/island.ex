@@ -8,14 +8,20 @@ defmodule IslandsEngine.Island do
   @enforce_keys [:coordinates, :hit_coordinates]
   defstruct @enforce_keys
 
+  @typedoc """
+  Represents an island
+  """
   @type t() :: %__MODULE__{
           coordinates: MapSet.t(Coordinate),
-          hit_coordinates: MapSet.t(Coordinate)
+          hit_coordinates: MapSet.t(Coordinate) | MapSet.t()
         }
+
+  # The type of `hit_coordinates` is an or type since it maybe be an empty MapSet when
+  # the struct is created.
 
   @type island_type :: :square | :atoll | :dot | :l_shape | :s_shape
 
-  @type offset :: {integer(), integer()}
+  @type offset :: {pos_integer(), pos_integer()}
 
   @type coordinates :: MapSet.t(Coordinate.t())
 

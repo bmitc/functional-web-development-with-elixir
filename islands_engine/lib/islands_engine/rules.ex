@@ -4,6 +4,8 @@ defmodule IslandsEngine.Rules do
   that processes actions for given states
   """
 
+  alias IslandsEngine.Player
+
   defstruct state: :initialized,
             player1: :islands_not_set,
             player2: :islands_not_set
@@ -28,20 +30,13 @@ defmodule IslandsEngine.Rules do
           | :game_over
 
   @typedoc """
-  Represents an islands game player
-  """
-  @type player() ::
-          :player1
-          | :player2
-
-  @typedoc """
   Represents an islands game action
   """
   @type action() ::
           :add_player
-          | {:position_islands, player()}
-          | {:set_islands, player()}
-          | {:guess_coordinate, player()}
+          | {:position_islands, Player.role()}
+          | {:set_islands, Player.role()}
+          | {:guess_coordinate, Player.role()}
           | {:win_check, :win | :no_win}
 
   @typedoc """
