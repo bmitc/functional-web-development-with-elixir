@@ -12,18 +12,27 @@ defmodule IslandsEngine.Island do
   Represents an island
   """
   @type t() :: %__MODULE__{
-          coordinates: MapSet.t(Coordinate),
-          hit_coordinates: MapSet.t(Coordinate) | MapSet.t()
+          coordinates: coordinates(),
+          hit_coordinates: coordinates()
         }
 
-  # The type of `hit_coordinates` is an or type since it maybe be an empty MapSet when
-  # the struct is created.
-
+  @typedoc """
+  Represents all of the possible types of islands in an islands game
+  """
   @type island_type :: :square | :atoll | :dot | :l_shape | :s_shape
 
+  @typedoc """
+  Represents a coordinate offset that can be used to offset a specific
+  coordinate from some origin
+  """
   @type offset :: {pos_integer(), pos_integer()}
 
-  @type coordinates :: MapSet.t(Coordinate.t())
+  @typedoc """
+  Represents a collection of coordinates, which is a `MapSet` consisting
+  of elements of type `t()` to help when processing coordinates as opposed
+  to a `list` or `map`
+  """
+  @type coordinates :: MapSet.t(Coordinate.t()) | MapSet.t()
 
   # Ignores the warning "Attempted to pattern match against the internal structure of an opaque term."
   # when pattern matching against `%MapSet{}` in `new/2`
