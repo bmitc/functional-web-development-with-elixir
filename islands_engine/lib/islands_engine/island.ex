@@ -34,10 +34,6 @@ defmodule IslandsEngine.Island do
   """
   @type coordinates :: MapSet.t(Coordinate.t()) | MapSet.t()
 
-  # Ignores the warning "Attempted to pattern match against the internal structure of an opaque term."
-  # when pattern matching against `%MapSet{}` in `new/2`
-  @dialyzer {:no_opaque, new: 2}
-
   @doc """
   Creates a new island
   """
@@ -45,7 +41,7 @@ defmodule IslandsEngine.Island do
           {:ok, __MODULE__.t()} | {:error, :invalid_island_type | :invalid_coordinate}
   def new(type, %Coordinate{} = upper_left) do
     with [{_, _} | _] = offsets <- offsets(type),
-         %MapSet{} = coordinates <- add_coordinates(offsets, upper_left) do
+         {:ok, coordinates} <- add_coordinates(offsets, upper_left) do
       {:ok, %__MODULE__{coordinates: coordinates, hit_coordinates: MapSet.new()}}
     end
   end
@@ -100,11 +96,17 @@ defmodule IslandsEngine.Island do
   def types(), do: [:square, :atoll, :dot, :l_shape, :s_shape]
 
   @spec add_coordinates([offset()], Coordinate.t()) ::
-          coordinates() | {:error, :invalid_coordinate}
+          {:ok, coordinates()} | {:error, :invalid_coordinate}
   defp add_coordinates(offsets, upper_left) do
-    Enum.reduce_while(offsets, MapSet.new(), fn island_type, coordinates ->
-      add_coordinate(coordinates, upper_left, island_type)
-    end)
+    reduce_while_result =
+      Enum.reduce_while(offsets, MapSet.new(), fn island_type, coordinates ->
+        add_coordinate(coordinates, upper_left, island_type)
+      end)
+
+    case reduce_while_result do
+      {:error, :invalid_coordinate} = error -> error
+      coordinates -> {:ok, coordinates}
+    end
   end
 
   @spec add_coordinate(coordinates(), Coordinate.t(), offset()) ::
