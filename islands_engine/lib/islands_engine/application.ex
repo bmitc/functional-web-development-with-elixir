@@ -10,8 +10,13 @@ defmodule IslandsEngine.Application do
     children = [
       # Starts a worker by calling: IslandsEngine.Worker.start_link(arg)
       # {IslandsEngine.Worker, arg}
-      {Registry, keys: :unique, name: Registry.Game}
+      {Registry, keys: :unique, name: Registry.Game},
+      IslandsEngine.GameSupervisor
     ]
+
+    # Create an ETS table to store game states in, keyed
+    # by player 1's name
+    :ets.new(:game_state, [:public, :named_table])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

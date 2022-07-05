@@ -5,7 +5,7 @@ defmodule IslandsEngine.Game do
 
   @behaviour Access
 
-  use GenServer
+  use GenServer, restart: :transient
 
   import IslandsEngine.Player, only: [is_player_role: 1]
 
@@ -25,6 +25,18 @@ defmodule IslandsEngine.Game do
           rules: Rules.t()
         }
 
+  @timeout_ms 15_000
+
+  @typedoc """
+  Represents an integer timeout value in milliseconds
+  """
+  @type timeout_ms() :: non_neg_integer()
+
+  @typedoc """
+  Represents a game reference as either a PID or a `:via` tuple
+  """
+  @type game_reference() :: pid() | {:via, Registry, {:"Elixir.Registry.__MODULE__", String.t()}}
+
   # Represents the call messages that can be sent to the game GenServer
   @typep call_messages() ::
            {:add_player, name :: String.t()}
@@ -33,7 +45,14 @@ defmodule IslandsEngine.Game do
            | {:set_islands, Player.role()}
            | {:guess_coordinate, Player.role(), row :: pos_integer(), column :: pos_integer()}
 
-  # @player_roles Player.roles()
+  # Tests whether the given `term` is a game reference or not, which means testing whether
+  # `term` is a PID or `:via` tuple
+  defguard is_game_reference(term)
+           when is_pid(term) or
+                  (is_tuple(term) and elem(term, 0) == :via and elem(term, 1) == Registry and
+                     is_tuple(elem(term, 2)) and
+                     elem(elem(term, 2), 0) == :"Elixir.Registry.Game" and
+                     is_binary(elem(elem(term, 2), 1)))
 
   ########################################################################
   #### Client interface ##################################################
@@ -53,47 +72,68 @@ defmodule IslandsEngine.Game do
   end
 
   @doc """
+  Given the player `name`, returns a `Registry` via tuple to be used for registering
+  an islands game `GenServer` under `name`
+  """
+  @spec via_tuple(String.t()) :: {:via, Registry, {Registry.Game, String.t()}}
+  def via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
+
+  @doc """
   Adds a second player to the game
   """
-  @spec add_player(pid(), String.t()) :: :ok | :error
-  def add_player(game_pid, name) when is_pid(game_pid) and is_binary(name) do
-    GenServer.call(game_pid, {:add_player, name})
+  @spec add_player(game_reference(), String.t()) :: :ok | :error
+  def add_player(game_reference, name)
+      when is_game_reference(game_reference) and is_binary(name) do
+    GenServer.call(game_reference, {:add_player, name})
   end
 
   @doc """
   Positions a player's island
   """
-  @spec position_island(pid(), Player.role(), Island.island_type(), pos_integer(), pos_integer()) ::
+  @spec position_island(
+          game_reference(),
+          Player.role(),
+          Island.island_type(),
+          pos_integer(),
+          pos_integer()
+        ) ::
           :ok
           | :error
           | {:error, :invalid_coordinate}
           | {:error, :invalid_island_type}
           | {:error, :overlapping_island}
-  def position_island(game_pid, player_role, island_type, row, column)
-      when is_pid(game_pid) and is_player_role(player_role) do
-    GenServer.call(game_pid, {:position_island, player_role, island_type, row, column})
+  def position_island(game_reference, player_role, island_type, row, column)
+      when is_game_reference(game_reference) and is_player_role(player_role) do
+    GenServer.call(game_reference, {:position_island, player_role, island_type, row, column})
   end
 
   @doc """
   Sets a player's island positions
   """
-  @spec set_islands(pid(), Player.role()) ::
+  @spec set_islands(game_reference(), Player.role()) ::
           :ok | {:ok, Board.t()} | :error | {:error, :not_all_islands_positioned}
-  def set_islands(game_pid, player_role) when is_pid(game_pid) and is_player_role(player_role) do
-    GenServer.call(game_pid, {:set_islands, player_role})
+  def set_islands(game_reference, player_role)
+      when is_game_reference(game_reference) and is_player_role(player_role) do
+    GenServer.call(game_reference, {:set_islands, player_role})
   end
 
   @doc """
   Guesses a coordinate for the given player
   """
-  @spec guess_coordinate(pid(), Player.role(), pos_integer(), pos_integer()) ::
+  @spec guess_coordinate(game_reference(), Player.role(), pos_integer(), pos_integer()) ::
           {:hit | :miss, Island.island_type(), :win | :no_win}
           | :error
           | {:error, :invalid_coordinate}
-  def guess_coordinate(game_pid, player_role, row, column)
-      when is_player_role(player_role) do
-    GenServer.call(game_pid, {:guess_coordinate, player_role, row, column})
+  def guess_coordinate(game_reference, player_role, row, column)
+      when is_game_reference(game_reference) and is_player_role(player_role) do
+    GenServer.call(game_reference, {:guess_coordinate, player_role, row, column})
   end
+
+  @doc """
+  Gets the timeout in milliseconds for waiting for new actions
+  """
+  @spec get_timeout_ms() :: timeout_ms()
+  def get_timeout_ms(), do: @timeout_ms
 
   ########################################################################
   #### GenServer callbacks ###############################################
@@ -101,14 +141,34 @@ defmodule IslandsEngine.Game do
 
   @impl GenServer
   def init(name) do
-    {:ok, %__MODULE__{player1: Player.new(name), player2: Player.new(), rules: Rules.new()}}
+    # Check if an existing game was stored in the game state ETS table. If so,
+    # then grab its state. If not, use the fresh initialized game state.
+    initial_state =
+      case :ets.lookup(:game_state, name) do
+        [] ->
+          fresh_state = %__MODULE__{
+            player1: Player.new(name),
+            player2: Player.new(),
+            rules: Rules.new()
+          }
+
+          # Create the game state
+          :ets.insert(:game_state, {name, fresh_state})
+
+          fresh_state
+
+        [{^name, previous_state}] ->
+          previous_state
+      end
+
+    {:ok, initial_state, @timeout_ms}
   end
 
   @impl GenServer
   @spec handle_call(call_messages(), {pid(), any()}, __MODULE__.t()) ::
-          {:reply, __MODULE__.t(), __MODULE__.t()}
-          | {:reply, :error, __MODULE__.t()}
-          | {:reply, {:error, :not_all_islands_positioned}, __MODULE__.t()}
+          {:reply, __MODULE__.t(), __MODULE__.t(), timeout_ms()}
+          | {:reply, :error, __MODULE__.t(), timeout_ms()}
+          | {:reply, {:error, :not_all_islands_positioned}, __MODULE__.t(), timeout_ms()}
   def handle_call({:add_player, name}, _from, state) do
     case Rules.check(state.rules, :add_player) do
       {:ok, rules} ->
@@ -118,7 +178,7 @@ defmodule IslandsEngine.Game do
         |> reply_success(:ok)
 
       :error ->
-        {:reply, :error, state}
+        {:reply, :error, state, @timeout_ms}
     end
   end
 
@@ -135,16 +195,16 @@ defmodule IslandsEngine.Game do
       |> reply_success(:ok)
     else
       :error = check_error ->
-        {:reply, check_error, state}
+        {:reply, check_error, state, @timeout_ms}
 
       {:error, :invalid_coordinate} = coordinate_new_error ->
-        {:reply, coordinate_new_error, state}
+        {:reply, coordinate_new_error, state, @timeout_ms}
 
       {:error, :invalid_island_type} = coordinate_or_island_new_error ->
-        {:reply, coordinate_or_island_new_error, state}
+        {:reply, coordinate_or_island_new_error, state, @timeout_ms}
 
       {:error, :overlapping_island} = position_island_error ->
-        {:reply, position_island_error, state}
+        {:reply, position_island_error, state, @timeout_ms}
     end
   end
 
@@ -157,8 +217,8 @@ defmodule IslandsEngine.Game do
       |> update_rules(rules)
       |> reply_success({:ok, board})
     else
-      :error -> {:reply, :error, state}
-      false -> {:reply, {:error, :not_all_islands_positioned}, state}
+      :error -> {:reply, :error, state, @timeout_ms}
+      false -> {:reply, {:error, :not_all_islands_positioned}, state, @timeout_ms}
     end
   end
 
@@ -178,12 +238,25 @@ defmodule IslandsEngine.Game do
       |> reply_success({hit_or_miss, forested_island, win_status})
     else
       :error = rules_check_error ->
-        {:reply, rules_check_error, state}
+        {:reply, rules_check_error, state, @timeout_ms}
 
       {:error, :invalid_coordinate} = coordinate_new_error ->
-        {:reply, coordinate_new_error, state}
+        {:reply, coordinate_new_error, state, @timeout_ms}
     end
   end
+
+  @impl GenServer
+  def handle_info(:timeout, state) do
+    {:stop, {:shutdown, :timeout}, state}
+  end
+
+  @impl GenServer
+  def terminate({:shutdown, :timeout}, state) do
+    :ets.delete(:game_state, state.player1.name)
+    :ok
+  end
+
+  def terminate(_reason, _state), do: :ok
 
   ########################################################################
   #### Access callbacks ##################################################
@@ -214,8 +287,14 @@ defmodule IslandsEngine.Game do
   @spec update_rules(__MODULE__.t(), Rules.t()) :: __MODULE__.t()
   defp update_rules(state, rules), do: %__MODULE__{state | rules: rules}
 
-  @spec reply_success(__MODULE__.t(), reply) :: {:reply, reply, __MODULE__.t()} when reply: any()
-  defp reply_success(state, reply), do: {:reply, reply, state}
+  @spec reply_success(__MODULE__.t(), reply) :: {:reply, reply, __MODULE__.t(), pos_integer()}
+        when reply: any()
+  defp reply_success(state, reply) do
+    # Update the game state ETS table with the new game state
+    :ets.insert(:game_state, {state.player1.name, state})
+
+    {:reply, reply, state, @timeout_ms}
+  end
 
   @spec player_board(__MODULE__.t(), Player.role()) :: Board.t()
   defp player_board(state, player), do: Map.get(state, player).board
@@ -237,7 +316,4 @@ defmodule IslandsEngine.Game do
   @spec opponent(Player.role()) :: Player.role()
   defp opponent(:player1), do: :player2
   defp opponent(:player2), do: :player1
-
-  @spec via_tuple(String.t()) :: {:via, Registry, {Registry.Game, String.t()}}
-  defp via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
 end

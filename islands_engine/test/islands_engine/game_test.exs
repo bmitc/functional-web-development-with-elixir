@@ -1,12 +1,20 @@
 defmodule IslandsEngine.GameTest do
   @moduledoc false
 
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
+  import IslandsEngine.Game, only: [is_game_reference: 1]
 
   alias IslandsEngine.Coordinate
   alias IslandsEngine.Game
   alias IslandsEngine.Island
   alias IslandsEngine.Rules
+
+  setup do
+    # Reset the game state ETS table before each test
+    :ets.delete_all_objects(:game_state)
+    :ok
+  end
 
   test "starting the game GenServer" do
     {:ok, game} = Game.start_link("Frank")
@@ -135,6 +143,12 @@ defmodule IslandsEngine.GameTest do
     assert Game.start_link("Lena") == {:error, {:already_started, game_pid}}
   end
 
-  @spec game_state(pid()) :: Game.t()
-  defp game_state(game_pid), do: :sys.get_state(game_pid)
+  ########################################################################
+  #### Private functions #################################################
+  ########################################################################
+
+  @spec game_state(Game.game_reference()) :: Game.t()
+  defp game_state(game_reference) when is_game_reference(game_reference) do
+    :sys.get_state(game_reference)
+  end
 end

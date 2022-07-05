@@ -1,7 +1,7 @@
 defmodule IslandsEngine.PlayerTest do
   @moduledoc false
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IslandsEngine.Board
   alias IslandsEngine.Guesses

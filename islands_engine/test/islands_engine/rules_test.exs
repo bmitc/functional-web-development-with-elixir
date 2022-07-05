@@ -1,7 +1,7 @@
 defmodule IslandsEngine.RulesTest do
   @moduledoc false
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IslandsEngine.Rules
 

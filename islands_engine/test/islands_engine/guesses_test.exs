@@ -1,7 +1,7 @@
 defmodule IslandsEngine.GuessesTest do
   @moduledoc false
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias IslandsEngine.Coordinate
   alias IslandsEngine.Guesses
