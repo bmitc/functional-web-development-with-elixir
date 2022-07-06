@@ -1,3 +1,5 @@
+[![build and test](https://github.com/bmitc/functional-web-development-with-elixir/actions/workflows/build-and-test.yml/badge.svg?branch=main)](https://github.com/bmitc/functional-web-development-with-elixir/actions/workflows/build-and-test.yml)
+
 # Functional Web Development with Elixir, OTP, and Phoenix
 
 This repository is code developed along with the excellent book *Functional Web Development with Elixir, OTP, and Phoenix* by Lance Halvorsen. For the most part, the code follows along with the book but has been modified to:

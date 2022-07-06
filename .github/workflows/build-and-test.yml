@@ -1,0 +1,66 @@
+name: build and test
+
+on: push
+
+jobs:
+  build-and-test:
+    name: build-and-test-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest] # macOS-latest is not supported by erlef/setup-beam@v1 right now
+    steps:
+      # On the Windows runner, the line ending conversions are enabled
+      - name: Disable Git line ending conversions
+        run: git config --global core.autocrlf false
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Erlang/OTP, Elixir, and Hex
+        uses: erlef/setup-beam@v1
+        id: beam
+        with:
+          otp-version: "25.0.1"
+          elixir-version: "1.13.4"
+          version-type: strict
+          install-hex: true
+
+      # Don't cache PLTs based on mix.lock hash, as Dialyzer can incrementally update even old ones
+      # Cache key based on Elixir & Erlang version (also useful when running in matrix)
+      - name: Restore PLT cache
+        uses: actions/cache@v2
+        id: plt_cache
+        with:
+          key: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
+          restore-keys: |
+            ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
+          path: |
+            priv/plts
+
+      - name: Install dependencies
+        run: mix deps.get
+        working-directory: islands_engine
+
+      - name: Compile
+        run: mix compile --warnings-as-errors
+        working-directory: islands_engine
+
+      - name: Run tests
+        run: mix test --warnings-as-errors
+        working-directory: islands_engine
+
+      - name: Run Credo checks
+        run: mix credo
+        working-directory: islands_engine
+
+      # Create PLTs if no cache is found
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        run: mix dialyzer --plt
+        working-directory: islands_engine
+
+      - name: Run Dialyzer
+        run: mix dialyzer
+        working-directory: islands_engine
