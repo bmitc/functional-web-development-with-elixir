@@ -1,6 +1,15 @@
-<section class="phx-hero">
+<section class="">
   <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
-  <p>Peace of mind from prototype to production</p>
+  <p class="lead">
+    A productive web framework that does not compromise speed and
+    maintainability.
+  </p>
+  <p>
+    <%= form_tag("/test") do
+      [tag(:input, type: "text", name: "name"),
+      tag(:input, type: "submit", value: "New Game")]
+    end %>
+  </p>
 </section>
 
 <section class="row">
