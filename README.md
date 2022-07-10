@@ -2,7 +2,7 @@
 
 # Functional Web Development with Elixir, OTP, and Phoenix
 
-This repository is code developed along with the excellent book *Functional Web Development with Elixir, OTP, and Phoenix* by Lance Halvorsen. For the most part, the code follows along with the book but has been modified to:
+This repository is code developed along with the excellent book [*Functional Web Development with Elixir, OTP, and Phoenix* by Lance Halvorsen](https://pragprog.com/titles/lhelph/functional-web-development-with-elixir-otp-and-phoenix/). For the most part, the code follows along with the book but has been modified to:
 
 * Include thorough documentation and typespecs
 * Fully comply with Dialyzer and Credo in strict mode and some check modifications
