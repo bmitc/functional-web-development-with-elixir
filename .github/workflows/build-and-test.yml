@@ -39,28 +39,70 @@ jobs:
           path: |
             priv/plts
 
-      - name: Install dependencies
+      ##################################################
+      #### IslandsEngine project #######################
+      ##################################################
+
+      - name: "IslandsEngine: Install dependencies"
         run: mix deps.get
         working-directory: islands_engine
 
-      - name: Compile
+      - name: "IslandsEngine: Compile"
         run: mix compile --warnings-as-errors
         working-directory: islands_engine
 
-      - name: Run tests
+      - name: "IslandsEngine: Run tests"
         run: mix test --warnings-as-errors
         working-directory: islands_engine
 
-      - name: Run Credo checks
+      - name: "IslandsEngine: Check formatting"
+        run: mix format --check-formatted
+        working-directory: islands_engine
+
+      - name: "IslandsEngine: Run Credo checks"
         run: mix credo
         working-directory: islands_engine
 
       # Create PLTs if no cache is found
-      - name: Create PLTs
+      - name: "IslandsEngine: Create PLTs"
         if: steps.plt_cache.outputs.cache-hit != 'true'
         run: mix dialyzer --plt
         working-directory: islands_engine
 
-      - name: Run Dialyzer
+      - name: "IslandsEngine: Run Dialyzer"
         run: mix dialyzer
         working-directory: islands_engine
+
+      ##################################################
+      #### IslandsInterface project ####################
+      ##################################################
+
+      - name: "IslandsInterface: Install dependencies"
+        run: mix deps.get
+        working-directory: islands_interface
+
+      - name: "IslandsInterface: Compile"
+        run: mix compile --warnings-as-errors
+        working-directory: islands_interface
+
+      - name: "IslandsInterface: Run tests"
+        run: mix test --warnings-as-errors
+        working-directory: islands_interface
+
+      - name: "IslandsInterface: Check formatting"
+        run: mix format --check-formatted
+        working-directory: islands_interface
+
+      - name: "IslandsInterface: Run Credo checks"
+        run: mix credo
+        working-directory: islands_interface
+
+      # Create PLTs if no cache is found
+      - name: "IslandsInterface: Create PLTs"
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        run: mix dialyzer --plt
+        working-directory: islands_interface
+
+      - name: "IslandsInterface: Run Dialyzer"
+        run: mix dialyzer
+        working-directory: islands_interface
