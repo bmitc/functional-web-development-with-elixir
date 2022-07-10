@@ -9,3 +9,4 @@ This repository is code developed along with the excellent book *Functional Web 
 * Convert the IEx sessions in the book to tests
 * Clean up or update some of the code in the book
 * Use structs more thoroughly than in the book and add in custom types for more domain driven development
+* [Convert the book's use of `Supervisor` with the `:simple_one_for_one` strategy, which has been deprecated, to use `DynamicSupervisor`](https://hexdocs.pm/elixir/DynamicSupervisor.html#module-migrating-from-supervisor-s-simple_one_for_one).
