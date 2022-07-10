@@ -17,17 +17,25 @@ defmodule IslandsInterfaceWeb do
   and import those modules here.
   """
 
-  def controller do
+  @doc """
+  Phoenix generated function
+  """
+  @spec controller() :: any()
+  def controller() do
     quote do
       use Phoenix.Controller, namespace: IslandsInterfaceWeb
 
       import Plug.Conn
       import IslandsInterfaceWeb.Gettext
-      alias IslandsInterfaceWeb.Router.Helpers, as: Routes
+      alias IslandsInterfaceWeb.Router.Helpers
     end
   end
 
-  def view do
+  @doc """
+  Phoenix generated function
+  """
+  @spec view() :: any()
+  def view() do
     quote do
       use Phoenix.View,
         root: "lib/islands_interface_web/templates",
@@ -42,7 +50,11 @@ defmodule IslandsInterfaceWeb do
     end
   end
 
-  def live_view do
+  @doc """
+  Phoenix generated function
+  """
+  @spec live_view() :: any()
+  def live_view() do
     quote do
       use Phoenix.LiveView,
         layout: {IslandsInterfaceWeb.LayoutView, "live.html"}
@@ -51,7 +63,11 @@ defmodule IslandsInterfaceWeb do
     end
   end
 
-  def live_component do
+  @doc """
+  Phoenix generated function
+  """
+  @spec live_component() :: any()
+  def live_component() do
     quote do
       use Phoenix.LiveComponent
 
@@ -59,7 +75,11 @@ defmodule IslandsInterfaceWeb do
     end
   end
 
-  def component do
+  @doc """
+  Phoenix generated function
+  """
+  @spec component() :: any()
+  def component() do
     quote do
       use Phoenix.Component
 
@@ -67,7 +87,11 @@ defmodule IslandsInterfaceWeb do
     end
   end
 
-  def router do
+  @doc """
+  Phoenix generated function
+  """
+  @spec router() :: any()
+  def router() do
     quote do
       use Phoenix.Router
 
@@ -77,14 +101,19 @@ defmodule IslandsInterfaceWeb do
     end
   end
 
-  def channel do
+  @doc """
+  Phoenix generated function
+  """
+  @spec channel() :: any()
+  def channel() do
     quote do
       use Phoenix.Channel
       import IslandsInterfaceWeb.Gettext
     end
   end
 
-  defp view_helpers do
+  @spec view_helpers() :: any()
+  defp view_helpers() do
     quote do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
@@ -97,7 +126,7 @@ defmodule IslandsInterfaceWeb do
 
       import IslandsInterfaceWeb.ErrorHelpers
       import IslandsInterfaceWeb.Gettext
-      alias IslandsInterfaceWeb.Router.Helpers, as: Routes
+      alias IslandsInterfaceWeb.Router.Helpers
     end
   end
 

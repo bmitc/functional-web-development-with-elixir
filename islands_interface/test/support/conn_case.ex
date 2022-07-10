@@ -24,7 +24,7 @@ defmodule IslandsInterfaceWeb.ConnCase do
       import Phoenix.ConnTest
       import IslandsInterfaceWeb.ConnCase
 
-      alias IslandsInterfaceWeb.Router.Helpers, as: Routes
+      alias IslandsInterfaceWeb.Router.Helpers
 
       # The default endpoint for testing
       @endpoint IslandsInterfaceWeb.Endpoint

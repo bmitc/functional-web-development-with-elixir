@@ -1,12 +1,20 @@
 defmodule IslandsInterfaceWeb.Telemetry do
+  @moduledoc """
+  Phoenix generated module
+  """
+
   use Supervisor
   import Telemetry.Metrics
 
+  @doc """
+  Phoenix generated function
+  """
+  @spec start_link(any()) :: any()
   def start_link(arg) do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end
 
-  @impl true
+  @impl Supervisor
   def init(_arg) do
     children = [
       # Telemetry poller will execute the given period measurements
@@ -19,7 +27,11 @@ defmodule IslandsInterfaceWeb.Telemetry do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  def metrics do
+  @doc """
+  Phoenix generated function
+  """
+  @spec metrics() :: any()
+  def metrics() do
     [
       # Phoenix Metrics
       summary("phoenix.endpoint.stop.duration",
@@ -38,7 +50,8 @@ defmodule IslandsInterfaceWeb.Telemetry do
     ]
   end
 
-  defp periodic_measurements do
+  @spec periodic_measurements() :: any()
+  defp periodic_measurements() do
     [
       # A module, function and arguments to be invoked periodically.
       # This function must call :telemetry.execute/3 and a metric must be added above.
