@@ -82,11 +82,11 @@ jobs:
         working-directory: islands_interface
 
       - name: "IslandsInterface: Compile"
-        run: mix compile --warnings-as-errors
+        run: mix compile #--warnings-as-errors
         working-directory: islands_interface
 
       - name: "IslandsInterface: Run tests"
-        run: mix test --warnings-as-errors
+        run: mix test #--warnings-as-errors
         working-directory: islands_interface
 
       - name: "IslandsInterface: Check formatting"
