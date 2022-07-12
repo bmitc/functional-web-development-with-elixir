@@ -10,9 +10,9 @@ defmodule IslandsInterfaceWeb.Endpoint do
     signing_salt: "eihZD1tx"
   ]
 
-  # socket("/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]])
+  socket("/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]])
 
-  # socket("/socket", IslandsInterface.UserSocket, websocket: true, longpoll: false)
+  socket("/socket", IslandsInterfaceWeb.UserSocket, websocket: true, longpoll: false)
 
   # Serve at "/" the static files from "priv/static" directory.
   #
