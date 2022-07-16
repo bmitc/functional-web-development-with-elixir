@@ -25,7 +25,8 @@ defmodule IslandsEngine.Game do
           rules: Rules.t()
         }
 
-  @timeout_ms 15_000
+  # 30 minutes
+  @timeout_ms 108_000
 
   @typedoc """
   Represents an integer timeout value in milliseconds

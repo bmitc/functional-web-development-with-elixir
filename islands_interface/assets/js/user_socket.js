@@ -127,7 +127,39 @@ window.set_broadcast_event_listener = (channel) => {
   })
 }
 
-// var game_channel = new_channel("moon", "moon")
-// join(game_channel)
+window.new_game = (channel) => {
+  channel.push("new_game")
+    .receive("ok", response => {
+      console.log("New Game!", response)
+    })
+    .receive("error", response => {
+      console.log("Unable to start a new game.", response)
+    })
+}
+
+window.add_player = (channel, player_name) => {
+  channel.push("add_player", player_name)
+    .receive("error", response => {
+      console.log("Unable to add new player: " + player_name, response)
+    })
+}
+
+window.set_player_added_listener = (channel) => {
+  channel.on("player_added", response => {
+    console.log("Player Added", response)
+  })
+}
+
+// Player 1's console session:
+//     var game_channel = new_channel("moon", "moon")
+//     join(game_channel)
+//     new_game(game_channel)
+//     set_player_add_listener(game_channel)
+
+// Player 2's console session:
+//     var game_channel = new_channel("moon", "sun")
+//     join(game_channel)
+//     set_player_add_listener(game_channel)
+//     add_player(game_channel, "sun")
 
 export default socket
