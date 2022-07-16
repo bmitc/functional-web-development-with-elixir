@@ -53,7 +53,7 @@ defmodule IslandsEngine.GameSupervisor do
   @spec pid_from_name(String.t()) :: pid() | nil
   defp pid_from_name(player_1_name) when is_binary(player_1_name) do
     player_1_name
-    |> Game.via_tuple()
+    |> Game.create_via_tuple()
     |> GenServer.whereis()
   end
 end

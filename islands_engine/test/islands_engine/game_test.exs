@@ -92,7 +92,7 @@ defmodule IslandsEngine.GameTest do
              MapSet.new([:atoll, :dot, :l_shape, :s_shape, :square])
            )
 
-    # Check that we're in the correc state and that player1 has set thir islands
+    # Check that we're in the correct state and that player1 has set their islands
     state_data = game_state(game)
     assert state_data.rules.state == :players_set
     assert state_data.rules.player1 == :islands_set

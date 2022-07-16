@@ -23,7 +23,7 @@ defmodule IslandsEngine.GameSupervisorTest do
     assert %{active: 0, specs: 0, supervisors: 0, workers: 0} =
              Supervisor.count_children(GameSupervisor)
 
-    via = Game.via_tuple("Cassatt")
+    via = Game.create_via_tuple("Cassatt")
 
     # Check that there's no existing game process for "Cassatt"
     refute GenServer.whereis(via)
@@ -66,7 +66,7 @@ defmodule IslandsEngine.GameSupervisorTest do
   test "game interaction" do
     {:ok, game_pid} = GameSupervisor.start_game("Hopper")
 
-    via = Game.via_tuple("Hopper")
+    via = Game.create_via_tuple("Hopper")
 
     # Check that the started game is the same as returned by the registry
     assert GenServer.whereis(via) == game_pid
@@ -112,7 +112,7 @@ defmodule IslandsEngine.GameSupervisorTest do
     # Kill the game's PID process
     Process.exit(game_pid, :kaboom)
 
-    via = Game.via_tuple("Morandi")
+    via = Game.create_via_tuple("Morandi")
 
     # Kill the test process after 5 seconds if the game is not restarted properly
     :timer.exit_after(5000, "Hopper game not restarted by GameSupervisor")
@@ -138,7 +138,7 @@ defmodule IslandsEngine.GameSupervisorTest do
     {:ok, game_pid} = GameSupervisor.start_game("Agnes")
 
     # Check that the via tuple matches the PID of the game we just started
-    via = Game.via_tuple("Agnes")
+    via = Game.create_via_tuple("Agnes")
     assert GenServer.whereis(via) == game_pid
 
     # Stop the game with a normal stop message

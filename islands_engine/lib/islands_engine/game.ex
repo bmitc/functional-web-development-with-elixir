@@ -33,9 +33,15 @@ defmodule IslandsEngine.Game do
   @type timeout_ms() :: non_neg_integer()
 
   @typedoc """
+  Represents a `:via` tuple for referencing GenServer processes registered
+  in `Registry.Game`
+  """
+  @type via_tuple() :: {:via, Registry, {Registry.Game, String.t()}}
+
+  @typedoc """
   Represents a game reference as either a PID or a `:via` tuple
   """
-  @type game_reference() :: pid() | {:via, Registry, {:"Elixir.Registry.__MODULE__", String.t()}}
+  @type game_reference() :: pid() | via_tuple()
 
   # Represents the call messages that can be sent to the game GenServer
   @typep call_messages() ::
@@ -68,15 +74,15 @@ defmodule IslandsEngine.Game do
           | {:stop, any()}
           | :ignore
   def start_link(name) when is_binary(name) do
-    GenServer.start_link(__MODULE__, name, name: via_tuple(name))
+    GenServer.start_link(__MODULE__, name, name: create_via_tuple(name))
   end
 
   @doc """
   Given the player `name`, returns a `Registry` via tuple to be used for registering
   an islands game `GenServer` under `name`
   """
-  @spec via_tuple(String.t()) :: {:via, Registry, {Registry.Game, String.t()}}
-  def via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
+  @spec create_via_tuple(String.t()) :: via_tuple()
+  def create_via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
 
   @doc """
   Adds a second player to the game
