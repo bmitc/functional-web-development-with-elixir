@@ -6,8 +6,12 @@
 version: 2
 updates:
 
-  # Elixir
   - package-ecosystem: "mix"
-    directory: "/"
+    directory: "/islands_engine"
+    schedule:
+      interval: "monthly"
+      
+  - package-ecosystem: "mix"
+    directory: "/islands_interface"
     schedule:
       interval: "monthly"
