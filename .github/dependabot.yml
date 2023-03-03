@@ -10,8 +10,16 @@ updates:
     directory: "/islands_engine"
     schedule:
       interval: "monthly"
+    reviewers:
+      - "bmitc"
+    assignees:
+      - "bmitc"
       
   - package-ecosystem: "mix"
     directory: "/islands_interface"
     schedule:
       interval: "monthly"
+    reviewers:
+      - "bmitc"
+    assignees:
+      - "bmitc"
